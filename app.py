@@ -3,8 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from datetime import datetime
+from flask import request
+from flask import jsonify  
+from sqlalchemy.sql import select
 
 app = Flask(__name__)
+DEBUG = True
 
 
 
@@ -94,10 +98,58 @@ def test():
     print(Submission.query.all())
 
 
+def get_submission_ids_json(submissions):
+    return jsonify({'submission_ids': [submission.submission_id for submission in submissions]})
+
+
+def failure_page(failure_info=""):
+    return failure_info
+
+
 @app.route("/")
 def main():
-	test()
+	#test()
 	return 'Hello World !'
+
+
+@app.route('/users', methods=['POST'])
+def user_register():
+    # TODO: valid input
+    try:
+        # TODO: remove this
+        if DEBUG:
+            Submission.query.delete()
+            User.query.delete()
+
+        new_user = User(nickname=request.form['nickname'], 
+            email=request.form['email'], password=request.form['password'])
+        new_user = User(nickname='aircrash', email='dave@example.com', password='hello')
+        db.session.add(new_user)
+        db.session.commit()
+        return 'successfully registered!'
+    except:
+        return failure_page('failed to register')
+
+
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user_info(user_id):
+    try:
+        user = User.query.get(user_id)
+        
+        return jsonify({'user_id':user.user_id, 'email':user.email, 'nickname':user.nickname})
+    except:
+        return failure_page('failed to get user info')
+
+
+@app.route('/users/<int:user_id>/submissions', methods=['GET'])
+def get_user_submissions(user_id):
+    try:
+        result = Submission.query.filter_by(user_id=user_id).all()
+        result = get_submission_ids_json(result)
+        return result
+    except:
+        return failure_page('failed to get user submissions')
+
 
 if __name__ == '__main__':
 	app.run()
