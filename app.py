@@ -33,36 +33,32 @@ db.init_app(app)
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(200), unique=False, nullable=True)
-    email = db.Column(db.String(200), unique=False, nullable=True)
+    """
+    access attribute by someuser.user_id
+    """
+    user_id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.String(200), unique=False, nullable=False)
+    email = db.Column(db.String(200), unique=True, nullable=False)
+    password = db.Column(db.String(200), unique=False, nullable=False)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User id: {}, nickname: {}, email: {}>'.format(self.user_id, 
+            self.nickname, self.email)
 
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), nullable=False)
-    body = db.Column(db.Text, nullable=False)
-    pub_date = db.Column(db.DateTime, nullable=False,
-        default=datetime.utcnow)
+class Submission(db.Model):
+    submission_id = db.Column(db.Integer, primary_key=True)
+    s3_model_key = db.Column(db.String(80), nullable=False)
+    s3_json_key = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'),
-        nullable=False)
-    category = db.relationship('Category',
-        backref=db.backref('posts', lazy=True))
-
-    def __repr__(self):
-        return '<Post %r>' % self.title
-
-
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    # TODO: lazy value
+    user = db.relationship('User',
+        backref=db.backref('submissions', lazy=True), uselist=False)
 
     def __repr__(self):
-        return '<Category %r>' % self.name
+        return '<Submission: {}>'.format(self.submission_id)
 
 
 @app.cli.command('resetdb')
@@ -80,20 +76,27 @@ def resetdb_command():
     print('Shiny!')
 
 
-def hello():
+def test():
+    User.query.delete()
+
     db.create_all()
-    admin = User(username='admin', email='admin@example.com')
-    guest = User(username='guest', email='guest@example.com')
-    db.session.add(admin)
-    db.session.add(guest)
+    example_user = User(nickname='aircrash', email='dave@example.com', password='hello')
+    db.session.add(example_user)
     db.session.commit()
     print(User.query.all())
+
+    example_sub = Submission(user_id=User.query.all()[0].user_id, 
+        s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
+        s3_json_key="7796f75c-f8f5-4707-901d-edcca3599326")
+    db.session.add(example_sub)
+    db.session.commit()
+    print(User.query.all())
+    print(Submission.query.all())
 
 
 @app.route("/")
 def main():
-	User.query.delete()
-	hello()
+	test()
 	return 'Hello World !'
 
 if __name__ == '__main__':
