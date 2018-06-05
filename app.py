@@ -5,7 +5,7 @@ from sqlalchemy_utils import database_exists, create_database, drop_database
 from datetime import datetime
 from flask import request
 from flask import jsonify  
-from sqlalchemy.sql import select
+from sqlalchemy.dialects.postgresql import JSON
 
 app = Flask(__name__)
 DEBUG = True
@@ -52,9 +52,12 @@ class User(db.Model):
 
 class Submission(db.Model):
     submission_id = db.Column(db.Integer, primary_key=True)
+    model_name = db.Column(db.String(80), nullable=False)
+    status = db.Column(db.String(80), nullable=False)
     s3_model_key = db.Column(db.String(80), nullable=False)
     s3_json_key = db.Column(db.String(80), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    feedback = db.Column(JSON, nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     # TODO: lazy value
@@ -65,22 +68,13 @@ class Submission(db.Model):
         return '<Submission: {}>'.format(self.submission_id)
 
 
-@app.cli.command('resetdb')
 def resetdb_command():
-    """Destroys and creates the database + tables."""
-    if database_exists(DB_URL):
-        print('Deleting database.')
-        drop_database(DB_URL)
-    if not database_exists(DB_URL):
-        print('Creating database.')
-        create_database(DB_URL)
-
-    print('Creating tables.')
-    db.create_all()
-    print('Shiny!')
+    db.drop_all()
+    db.create_all() # create tables
 
 
 def test():
+    Submission.query.delete()
     User.query.delete()
 
     db.create_all()
@@ -90,6 +84,18 @@ def test():
     print(User.query.all())
 
     example_sub = Submission(user_id=User.query.all()[0].user_id, 
+        model_name="VGG-16 v1.0",
+        status="submitted",
+        s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
+        s3_json_key="7796f75c-f8f5-4707-901d-edcca3599326")
+    db.session.add(example_sub)
+    db.session.commit()
+    print(User.query.all())
+    print(Submission.query.all())
+
+    example_sub = Submission(user_id=User.query.all()[0].user_id, 
+        model_name="VGG-16 v1.0",
+        status="submitted",
         s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
         s3_json_key="7796f75c-f8f5-4707-901d-edcca3599326")
     db.session.add(example_sub)
@@ -106,10 +112,24 @@ def failure_page(failure_info=""):
     return failure_info
 
 
+def get_submission_details_json(submission):
+    return jsonify({
+                      "submission_id": submission.submission_id,
+                      "user_id": submission.user_id,
+                      "model_name": submission.model_name,
+                      "status": submission.status,
+                      "created_at": submission.created_at,
+                      "feedback": submission.feedback
+                    })
+
+
 @app.route("/")
 def main():
-	#test()
-	return 'Hello World !'
+    if DEBUG:
+        resetdb_command()
+
+    test()
+    return 'Hello World !'
 
 
 @app.route('/users', methods=['POST'])
@@ -151,8 +171,56 @@ def get_user_submissions(user_id):
         return failure_page('failed to get user submissions')
 
 
+@app.route('/submissions/<int:submission_id>', methods=['GET', 'POST'])
+def get_update_submission_detail(submission_id):
+    if request.method == 'GET':
+        try:
+            submission = Submission.query.get(submission_id)
+            return get_submission_details_json(submission)
+        except:
+            return failure_page('failed to get get submission details')
+
+    else:
+        try:
+            submission = Submission.query.get(request.form['submission_id'])
+            submission.feedback = request.form['feedback']
+            db.session.commit()
+
+            return "successfully updated submission details"
+        except:
+            return failure_page('failed to update submission details')
+
+
+@app.route('/submit', methods=['POST'])
+def make_submission():
+    print("hello")
+    example_sub = Submission(user_id=request.form['user_id'], 
+        model_name=request.form['model_name'],
+        status="submitted",
+        s3_model_key=request.form['s3_model_key'], 
+        s3_json_key=request.form['s3_json_key'])
+    db.session.add(example_sub)
+    db.session.commit()
+    print(User.query.all())
+    print(Submission.query.all())
+    return "successfully submitted"
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        user = User.query.filter_by(email=request.form['email']).first()
+        if user.password == request.form['password']:
+            return "successfully login"
+        else:
+            return "failed to login"
+    except:
+        return "user doesn't exists or password doesn't match"
+
+
 if __name__ == '__main__':
-	app.run()
+    app.run()
+
 
 
 
