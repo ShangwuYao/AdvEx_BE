@@ -1,4 +1,6 @@
-from flask import Flask
+from flask import Flask, session
+import flask
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 import os
 from sqlalchemy_utils import database_exists, create_database, drop_database
@@ -6,9 +8,16 @@ from datetime import datetime
 from flask import request
 from flask import jsonify  
 from sqlalchemy.dialects.postgresql import JSON
+import numpy as np
+import re
 
 app = Flask(__name__)
 DEBUG = True
+
+#os.environ['SESSION_TYPE'] = 'filesystem'
+SESSION_TYPE = 'filesystem'
+app.config.from_object(__name__)
+Session(app)
 
 
 
@@ -71,6 +80,25 @@ class Submission(db.Model):
 def resetdb_command():
     db.drop_all()
     db.create_all() # create tables
+
+
+def set_access_token(user_id):
+    user_id = str(user_id) # safe
+    rand = np.random.randint(0, (1 << 31) - 1)
+    token = "Basic " + user_id + ":" + str(rand)
+    session[user_id] = token
+    print("token", token)
+    return token
+
+
+def get_access_token(user_id):
+    user_id = str(user_id)
+    return session[user_id]
+
+
+def tokenized(token):
+    user_id = re.findall("\ (.*)\:", token)[0]
+    return token == get_access_token(user_id)
 
 
 def test():
@@ -150,9 +178,17 @@ def user_register():
     except:
         return failure_page('failed to register')
 
+@app.route('/users/<int:user_id>', methods=['POST'])
+def set_user_token(user_id):
+    token = set_access_token(user_id)
+    return "hi"
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user_info(user_id):
+    istokenvalid = tokenized(request.headers.get('Authorization'))
+    if not istokenvalid:
+        return failure_page("access token doesn't match")
+    
     try:
         user = User.query.get(user_id)
         
