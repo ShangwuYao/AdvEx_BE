@@ -178,10 +178,6 @@ def user_register():
     except:
         return failure_page('failed to register')
 
-@app.route('/users/<int:user_id>', methods=['POST'])
-def set_user_token(user_id):
-    token = set_access_token(user_id)
-    return "hi"
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user_info(user_id):
@@ -199,6 +195,10 @@ def get_user_info(user_id):
 
 @app.route('/users/<int:user_id>/submissions', methods=['GET'])
 def get_user_submissions(user_id):
+    istokenvalid = tokenized(request.headers.get('Authorization'))
+    if not istokenvalid:
+        return failure_page("access token doesn't match")
+
     try:
         result = Submission.query.filter_by(user_id=user_id).all()
         result = get_submission_ids_json(result)
@@ -209,6 +209,10 @@ def get_user_submissions(user_id):
 
 @app.route('/submissions/<int:submission_id>', methods=['GET', 'POST'])
 def get_update_submission_detail(submission_id):
+    istokenvalid = tokenized(request.headers.get('Authorization'))
+    if not istokenvalid:
+        return failure_page("access token doesn't match")
+
     if request.method == 'GET':
         try:
             submission = Submission.query.get(submission_id)
@@ -229,7 +233,10 @@ def get_update_submission_detail(submission_id):
 
 @app.route('/submit', methods=['POST'])
 def make_submission():
-    print("hello")
+    istokenvalid = tokenized(request.headers.get('Authorization'))
+    if not istokenvalid:
+        return failure_page("access token doesn't match")
+        
     example_sub = Submission(user_id=request.form['user_id'], 
         model_name=request.form['model_name'],
         status="submitted",
@@ -247,7 +254,8 @@ def login():
     try:
         user = User.query.filter_by(email=request.form['email']).first()
         if user.password == request.form['password']:
-            return "successfully login"
+            token = set_access_token(user.user_id)
+            return token
         else:
             return "failed to login"
     except:
