@@ -87,7 +87,7 @@ def set_access_token(user_id):
     rand = np.random.randint(0, (1 << 31) - 1)
     token = "Basic " + user_id + ":" + str(rand)
     session[user_id] = token
-    print("token", token)
+    
     return token
 
 
@@ -96,9 +96,19 @@ def get_access_token(user_id):
     return session[user_id]
 
 
-def tokenized(token):
+def _tokenized(token):
     user_id = re.findall("\ (.*)\:", token)[0]
     return token == get_access_token(user_id)
+
+
+def check_access_token():
+    try:
+        istokenvalid = _tokenized(request.headers.get('Authorization'))
+        if not istokenvalid:
+            return failure_page("access token doesn't match")
+        return None
+    except:
+        return failure_page("please log in first")
 
 
 def test():
@@ -171,7 +181,6 @@ def user_register():
 
         new_user = User(nickname=request.form['nickname'], 
             email=request.form['email'], password=request.form['password'])
-        new_user = User(nickname='aircrash', email='dave@example.com', password='hello')
         db.session.add(new_user)
         db.session.commit()
         return 'successfully registered!'
@@ -181,9 +190,9 @@ def user_register():
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user_info(user_id):
-    istokenvalid = tokenized(request.headers.get('Authorization'))
-    if not istokenvalid:
-        return failure_page("access token doesn't match")
+    returned_page = check_access_token()
+    if returned_page is not None:
+        return returned_page
     
     try:
         user = User.query.get(user_id)
@@ -195,9 +204,9 @@ def get_user_info(user_id):
 
 @app.route('/users/<int:user_id>/submissions', methods=['GET'])
 def get_user_submissions(user_id):
-    istokenvalid = tokenized(request.headers.get('Authorization'))
-    if not istokenvalid:
-        return failure_page("access token doesn't match")
+    returned_page = check_access_token()
+    if returned_page is not None:
+        return returned_page
 
     try:
         result = Submission.query.filter_by(user_id=user_id).all()
@@ -209,9 +218,9 @@ def get_user_submissions(user_id):
 
 @app.route('/submissions/<int:submission_id>', methods=['GET', 'POST'])
 def get_update_submission_detail(submission_id):
-    istokenvalid = tokenized(request.headers.get('Authorization'))
-    if not istokenvalid:
-        return failure_page("access token doesn't match")
+    returned_page = check_access_token()
+    if returned_page is not None:
+        return returned_page
 
     if request.method == 'GET':
         try:
@@ -233,9 +242,9 @@ def get_update_submission_detail(submission_id):
 
 @app.route('/submit', methods=['POST'])
 def make_submission():
-    istokenvalid = tokenized(request.headers.get('Authorization'))
-    if not istokenvalid:
-        return failure_page("access token doesn't match")
+    returned_page = check_access_token()
+    if returned_page is not None:
+        return returned_page
         
     example_sub = Submission(user_id=request.form['user_id'], 
         model_name=request.form['model_name'],
@@ -260,6 +269,19 @@ def login():
             return "failed to login"
     except:
         return "user doesn't exists or password doesn't match"
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    returned_page = check_access_token()
+    if returned_page is not None:
+        return returned_page
+
+    try:
+        del session[str(request.form['user_id'])]
+        return "successfully logout"
+    except:
+        return failure_page("failed to delete access token")
 
 
 if __name__ == '__main__':
