@@ -116,9 +116,9 @@ def create_app():
         return 'Hello World !'
 
 
-    @app.route("/ping")
-    def ping():
-        return 'Hi World !'
+    @app.route("/root")
+    def root():
+        return main()
 
 
     @app.route('/users', methods=['POST'])
