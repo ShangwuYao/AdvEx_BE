@@ -269,7 +269,7 @@ def login():
         user = User.query.filter_by(email=form['email']).first()
         if user is not None and user.password == form['password']:
             token = set_access_token(user.user_id)
-            return jsonify({'token': token})
+            return jsonify({'user_id': user.user_id, 'token': token})
         else:
             return failure_page("user doesn't exists or password doesn't match")
     except:
