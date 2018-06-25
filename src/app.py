@@ -210,9 +210,9 @@ def user_register():
     # TODO: valid input
     try:
         # TODO: remove this
-        if DEBUG:
-            Submission.query.delete()
-            User.query.delete()
+        # if DEBUG:
+        #     Submission.query.delete()
+        #     User.query.delete()
 
         new_user = User(nickname=form['nickname'], 
             email=form['email'], password=form['password'])
