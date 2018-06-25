@@ -2,6 +2,7 @@ from flask import Flask, session
 import flask
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from datetime import datetime
@@ -12,13 +13,13 @@ import numpy as np
 import re
 
 app = Flask(__name__)
+cors = CORS(app)
 DEBUG = True
 
 #os.environ['SESSION_TYPE'] = 'filesystem'
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
 Session(app)
-
 
 
 def get_env_variable(name):
@@ -172,6 +173,7 @@ def main():
 
 @app.route('/users', methods=['POST'])
 def user_register():
+    form = request.get_json()
     # TODO: valid input
     try:
         # TODO: remove this
@@ -179,8 +181,8 @@ def user_register():
             Submission.query.delete()
             User.query.delete()
 
-        new_user = User(nickname=request.form['nickname'], 
-            email=request.form['email'], password=request.form['password'])
+        new_user = User(nickname=form['nickname'], 
+            email=form['email'], password=form['password'])
         db.session.add(new_user)
         db.session.commit()
         return 'successfully registered!'
@@ -222,6 +224,7 @@ def get_update_submission_detail(submission_id):
     if returned_page is not None:
         return returned_page
 
+    form = request.get_json()
     if request.method == 'GET':
         try:
             submission = Submission.query.get(submission_id)
@@ -231,7 +234,7 @@ def get_update_submission_detail(submission_id):
 
     else:
         try:
-            submission = Submission.query.get(request.form['submission_id'])
+            submission = Submission.query.get(form['submission_id'])
             submission.feedback = request.form['feedback']
             db.session.commit()
 
@@ -246,7 +249,7 @@ def make_submission():
     if returned_page is not None:
         return returned_page
 
-    form = request.get_json()        
+    form = request.get_json()
     example_sub = Submission(user_id=form['user_id'], 
         model_name=form['model_name'],
         status="submitted",
@@ -280,8 +283,9 @@ def logout():
     if returned_page is not None:
         return returned_page
 
+    form = request.get_json()
     try:
-        del session[str(request.form['user_id'])]
+        del session[str(form['user_id'])]
         return "successfully logout"
     except:
         return failure_page("failed to delete access token")
