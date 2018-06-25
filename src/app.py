@@ -11,6 +11,8 @@ from flask import jsonify
 from sqlalchemy.dialects.postgresql import JSON
 import numpy as np
 import re
+import boto3
+import json
 
 app = Flask(__name__)
 cors = CORS(app, supports_credentials=True)
@@ -44,6 +46,22 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation w
 
 db = SQLAlchemy(app)
 db.init_app(app)
+
+
+sqs = boto3.client('sqs')
+resp = sqs.get_queue_url(QueueName='advex')
+queue_url = resp['QueueUrl']
+
+
+def send_job_to_sqs(submission_id, s3_model_key, s3_index_key):
+    job = {
+        'submission_id': submission_id,
+        's3_model_key': s3_model_key,
+        's3_index_key': s3_index_key
+    }
+    message = json.dumps(job)
+    resp = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
+    # TODO: error handling
 
 
 class User(db.Model):
@@ -267,15 +285,15 @@ def make_submission():
         return returned_page
 
     form = request.get_json()
-    example_sub = Submission(user_id=form['user_id'], 
+    submission = Submission(user_id=form['user_id'], 
         model_name=form['model_name'],
         status="submitted",
         s3_model_key=form['s3_model_key'], 
         s3_index_key=form['s3_index_key'])
-    db.session.add(example_sub)
+    db.session.add(submission)
     db.session.commit()
-    print(User.query.all())
-    print(Submission.query.all())
+
+    send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
     return "successfully submitted"
 
 
