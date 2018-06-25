@@ -13,7 +13,7 @@ import numpy as np
 import re
 
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app, supports_credentials=True)
 DEBUG = True
 
 #os.environ['SESSION_TYPE'] = 'filesystem'
