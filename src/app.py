@@ -147,7 +147,7 @@ def get_submission_ids_json(submissions):
 
 
 def failure_page(failure_info=""):
-    return failure_info
+    return jsonify({'error': failure_info})
 
 
 def get_submission_details_json(submission):
@@ -260,15 +260,19 @@ def make_submission():
 
 @app.route('/login', methods=['POST'])
 def login():
+    print('test login')
+    print(request.get_json())
+    form = request.get_json()
     try:
-        user = User.query.filter_by(email=request.form['email']).first()
-        if user.password == request.form['password']:
+        user = User.query.filter_by(email=form['email']).first()
+        if user is not None and user.password == form['password']:
             token = set_access_token(user.user_id)
-            return token
+            return jsonify({'token': token})
         else:
-            return "failed to login"
+            return failure_page("user doesn't exists or password doesn't match")
     except:
-        return "user doesn't exists or password doesn't match"
+        raise
+        return failure_page("failed to login")
 
 
 @app.route('/logout', methods=['POST'])
