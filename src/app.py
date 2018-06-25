@@ -103,7 +103,11 @@ def _tokenized(token):
 
 
 def check_access_token():
+    print(request.headers.get('Authorization'))
     try:
+        token = request.headers.get('Authorization')
+        if not token:
+            return failure_page("invalid access token")
         istokenvalid = _tokenized(request.headers.get('Authorization'))
         if not istokenvalid:
             return failure_page("access token doesn't match")
@@ -143,15 +147,25 @@ def test():
     print(Submission.query.all())
 
 
-def get_submission_ids_json(submissions):
-    return jsonify({'submission_ids': [submission.submission_id for submission in submissions]})
-
-
 def failure_page(failure_info=""):
     return jsonify({'error': failure_info})
 
 
-def get_submission_details_json(submission):
+def get_submission_history(submissions):
+    return jsonify({'submissions': [get_submission_detail_without_feedback(submission) for submission in submissions]})
+
+
+def get_submission_detail_without_feedback(submission):
+    return {
+      "submission_id": submission.submission_id,
+      "user_id": submission.user_id,
+      "model_name": submission.model_name,
+      "status": submission.status,
+      "created_at": submission.created_at
+    }
+
+
+def get_submission_detail(submission):
     return jsonify({
                       "submission_id": submission.submission_id,
                       "user_id": submission.user_id,
@@ -170,6 +184,7 @@ def main():
     test()
     return 'Hello World !'
 
+import traceback
 
 @app.route('/users', methods=['POST'])
 def user_register():
@@ -186,7 +201,9 @@ def user_register():
         db.session.add(new_user)
         db.session.commit()
         return 'successfully registered!'
-    except:
+    except Exception as e:
+        print('exception')
+        traceback.print_exc()
         return failure_page('failed to register')
 
 
@@ -210,12 +227,12 @@ def get_user_submissions(user_id):
     if returned_page is not None:
         return returned_page
 
-    try:
-        result = Submission.query.filter_by(user_id=user_id).all()
-        result = get_submission_ids_json(result)
-        return result
-    except:
-        return failure_page('failed to get user submissions')
+    # try:
+    result = Submission.query.filter_by(user_id=user_id).all()
+    result = get_submission_history(result)
+    return result
+    # except:
+        # return failure_page('failed to get user submissions')
 
 
 @app.route('/submissions/<int:submission_id>', methods=['GET', 'POST'])
@@ -228,7 +245,7 @@ def get_update_submission_detail(submission_id):
     if request.method == 'GET':
         try:
             submission = Submission.query.get(submission_id)
-            return get_submission_details_json(submission)
+            return get_submission_detail(submission)
         except:
             return failure_page('failed to get get submission details')
 
@@ -293,7 +310,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run()
-
-
-
-
