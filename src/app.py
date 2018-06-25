@@ -245,12 +245,13 @@ def make_submission():
     returned_page = check_access_token()
     if returned_page is not None:
         return returned_page
-        
-    example_sub = Submission(user_id=request.form['user_id'], 
-        model_name=request.form['model_name'],
+
+    form = request.get_json()        
+    example_sub = Submission(user_id=form['user_id'], 
+        model_name=form['model_name'],
         status="submitted",
-        s3_model_key=request.form['s3_model_key'], 
-        s3_index_key=request.form['s3_index_key'])
+        s3_model_key=form['s3_model_key'], 
+        s3_index_key=form['s3_index_key'])
     db.session.add(example_sub)
     db.session.commit()
     print(User.query.all())
@@ -260,8 +261,6 @@ def make_submission():
 
 @app.route('/login', methods=['POST'])
 def login():
-    print('test login')
-    print(request.get_json())
     form = request.get_json()
     try:
         user = User.query.filter_by(email=form['email']).first()
