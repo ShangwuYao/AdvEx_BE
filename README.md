@@ -33,7 +33,7 @@ Import the following config file in `app.py` instead:
 ```bash
 from config.testing_docker import *
 ```
-Then run command (mapping host port 4000 to docker port 80, use 5432 for postgresDB port, see config file for detail):
+Then run command (mapping host port 4000 to docker port 80, use 5432 for postgresDB port, see examples of configuration files in docs/ for detail):
 ```bash
 docker run -p 4000:80 awp135/advex:backend
 ```
