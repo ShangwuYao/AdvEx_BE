@@ -2,3 +2,5 @@
 /*/.DS_Store
 *.pyc
 /flask_session
+/config
+.pytest_cache/
