@@ -15,3 +15,16 @@ For pulling docker:
 ```bash
 docker pull awp135/advex:backend
 ```
+
+## Usage
+Use PostgresSQL, supports two way of testing now (to be refactorized):
+1. local testing: 
+Import the following config file in `app.py`: 
+```bash
+from config.testing_local import *
+```
+2. testing with docker:
+Import the following config file in `app.py` instead:
+```bash
+from config.testing_docker import *
+```
