@@ -13,7 +13,7 @@ import re
 import pytest
 from utils import get_env_variable, set_access_token, get_submission_details_json, \
                   get_access_token, check_access_token, get_submission_ids_json, failure_page
-from config.testing import *
+from config.testing_docker import *
 
 
 
