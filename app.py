@@ -12,7 +12,7 @@ from sqlalchemy.dialects.postgresql import JSON
 import numpy as np
 import re
 import pytest
-from utils import get_env_variable, set_access_token, get_submission_details_json, \
+from utils import get_env_variable, set_access_token, get_submission_details_json, get_submission_history\
                   get_access_token, check_access_token, get_submission_ids_json, failure_page
 from config.testing_docker import *
 import boto3
@@ -168,7 +168,7 @@ def get_user_submissions(user_id):
 
     try:
         result = Submission.query.filter_by(user_id=user_id).all()
-        result = get_submission_ids_json(result)
+        result = get_submission_history(result)
         return result
     except:
         return failure_page('failed to get user submissions')
@@ -188,8 +188,9 @@ def get_update_submission_detail(submission_id):
             return failure_page('failed to get get submission details')
     else:
         try:
-            submission = Submission.query.get(request.form['submission_id'])
-            submission.feedback = request.form['feedback']
+            form = request.get_json()
+            submission = Submission.query.get(form['submission_id'])
+            submission.feedback = form['feedback']
             db.session.commit()
 
             return "successfully updated submission details"
@@ -204,15 +205,16 @@ def make_submission():
         return returned_page
         
     try:
-        example_sub = Submission(user_id=request.form['user_id'], 
-            model_name=request.form['model_name'],
+        form = request.get_json()
+        submission = Submission(user_id=form['user_id'], 
+            model_name=form['model_name'],
             status="submitted",
-            s3_model_key=request.form['s3_model_key'], 
-            s3_index_key=request.form['s3_index_key'])
-        db.session.add(example_sub)
+            s3_model_key=form['s3_model_key'], 
+            s3_index_key=form['s3_index_key'])
+        db.session.add(submission)
         db.session.commit()
-        print(User.query.all())
-        print(Submission.query.all())
+
+        send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
         return "successfully submitted"
     except:
         failure_page("failed to submit, check user id")
@@ -222,13 +224,13 @@ def make_submission():
 def login():
     try:
         user = User.query.filter_by(email=request.form['email']).first()
-        if user.password == request.form['password']:
+        if user is not None and user.password == request.form['password']:
             token = set_access_token(user.user_id)
-            return token
+            return jsonify({'user_id': user.user_id, 'token': token})
         else:
-            return failure_page("failed to login")
+            return failure_page("user doesn't exists or password doesn't match")
     except:
-        return failure_page("user doesn't exists or password doesn't match")
+        return failure_page("failed to login")
 
 
 @app.route('/logout', methods=['POST'])
@@ -238,7 +240,8 @@ def logout():
         return returned_page
 
     try:
-        del session[str(request.form['user_id'])]
+        form = request.get_json()
+        del session[str(form['user_id'])]
         return "successfully logout"
     except:
         return failure_page("failed to delete access token")
