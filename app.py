@@ -2,6 +2,7 @@ from flask import Flask, session, Blueprint
 import flask
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from datetime import datetime
@@ -14,6 +15,8 @@ import pytest
 from utils import get_env_variable, set_access_token, get_submission_details_json, \
                   get_access_token, check_access_token, get_submission_ids_json, failure_page
 from config.testing_docker import *
+import boto3
+import json
 
 
 
@@ -24,11 +27,28 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 Session(app)
 
+cors = CORS(app, supports_credentials=True)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
 
 db = SQLAlchemy(app)
 db.init_app(app)
+
+
+sqs = boto3.client('sqs')
+resp = sqs.get_queue_url(QueueName='advex')
+queue_url = resp['QueueUrl']
+
+
+def send_job_to_sqs(submission_id, s3_model_key, s3_index_key):
+    job = {
+        'submission_id': submission_id,
+        's3_model_key': s3_model_key,
+        's3_index_key': s3_index_key
+    }
+    message = json.dumps(job)
+    resp = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
 
 
 class User(db.Model):
