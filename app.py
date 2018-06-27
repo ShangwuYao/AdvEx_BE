@@ -4,6 +4,7 @@ from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
+import sys
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from datetime import datetime
 from flask import request
@@ -12,9 +13,9 @@ from sqlalchemy.dialects.postgresql import JSON
 import numpy as np
 import re
 import pytest
-from utils import get_env_variable, set_access_token, get_submission_details_json, get_submission_history\
-                  get_access_token, check_access_token, get_submission_ids_json, failure_page
-from config.testing_docker import *
+from utils import get_env_variable, set_access_token, get_submission_details_json,\
+                  get_access_token, check_access_token, get_submission_history, failure_page
+# from config.testing_docker import *
 import boto3
 import json
 
@@ -24,9 +25,20 @@ SESSION_TYPE = 'filesystem'
 
 app = Flask(__name__)
 
-app.config.from_object(__name__)
-Session(app)
+if len(sys.argv) < 2:
+    raise('Usage: python app.py [mode]')
+if sys.argv[1] == 'prod':
+    from config.prod import *
+elif sys.argv[1] == 'test_local':
+    from config.test_local import *
+elif sys.argv[1] == 'test_docker':
+    from config.test_docker import *
+else:
+    raise('Mode not supported.')
 
+app.config.from_object(__name__)
+
+Session(app)
 cors = CORS(app, supports_credentials=True)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
