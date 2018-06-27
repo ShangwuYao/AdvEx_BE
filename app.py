@@ -50,7 +50,7 @@ class Submission(db.Model):
     model_name = db.Column(db.String(80), nullable=False)
     status = db.Column(db.String(80), nullable=False)
     s3_model_key = db.Column(db.String(80), nullable=False)
-    s3_json_key = db.Column(db.String(80), nullable=False)
+    s3_index_key = db.Column(db.String(80), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     feedback = db.Column(JSON, nullable=True)
 
@@ -82,7 +82,7 @@ def test():
         model_name="VGG-16 v1.0",
         status="submitted",
         s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
-        s3_json_key="7796f75c-f8f5-4707-901d-edcca3599326")
+        s3_index_key="7796f75c-f8f5-4707-901d-edcca3599326")
     db.session.add(example_sub)
     db.session.commit()
     print(User.query.all())
@@ -92,7 +92,7 @@ def test():
         model_name="VGG-16 v1.0",
         status="submitted",
         s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
-        s3_json_key="7796f75c-f8f5-4707-901d-edcca3599326")
+        s3_index_key="7796f75c-f8f5-4707-901d-edcca3599326")
     db.session.add(example_sub)
     db.session.commit()
     print(User.query.all())
@@ -188,7 +188,7 @@ def make_submission():
             model_name=request.form['model_name'],
             status="submitted",
             s3_model_key=request.form['s3_model_key'], 
-            s3_json_key=request.form['s3_json_key'])
+            s3_index_key=request.form['s3_index_key'])
         db.session.add(example_sub)
         db.session.commit()
         print(User.query.all())
