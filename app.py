@@ -227,7 +227,7 @@ def make_submission():
         db.session.commit()
 
         send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
-        return "successfully submitted"
+        return jsonify({'submission_id': submission.submission_id})
     except:
         return failure_page("failed to submit, check user id")
 
