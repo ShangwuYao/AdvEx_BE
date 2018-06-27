@@ -220,7 +220,7 @@ def make_submission():
         form = request.get_json()
         submission = Submission(user_id=form['user_id'], 
             model_name=form['model_name'],
-            status="submitted",
+            status="Submitted",
             s3_model_key=form['s3_model_key'], 
             s3_index_key=form['s3_index_key'])
         db.session.add(submission)
@@ -229,14 +229,15 @@ def make_submission():
         send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
         return "successfully submitted"
     except:
-        failure_page("failed to submit, check user id")
+        return failure_page("failed to submit, check user id")
 
 
 @app.route('/login', methods=['POST'])
 def login():
     try:
-        user = User.query.filter_by(email=request.form['email']).first()
-        if user is not None and user.password == request.form['password']:
+        form = request.get_json()
+        user = User.query.filter_by(email=form['email']).first()
+        if user is not None and user.password == form['password']:
             token = set_access_token(user.user_id)
             return jsonify({'user_id': user.user_id, 'token': token})
         else:
