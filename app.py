@@ -27,11 +27,11 @@ app = Flask(__name__)
 
 if len(sys.argv) < 2:
     raise('Usage: python app.py [mode]')
-if sys.argv[1] == 'prod':
-    from config.prod import *
-elif sys.argv[1] == 'test_local':
+if sys.argv[1] == 'production':
+    from config.production import *
+elif sys.argv[1] == 'testing_local':
     from config.test_local import *
-elif sys.argv[1] == 'test_docker':
+elif sys.argv[1] == 'testing_docker':
     from config.test_docker import *
 else:
     raise('Mode not supported.')
