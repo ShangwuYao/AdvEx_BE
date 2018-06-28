@@ -50,9 +50,14 @@ def check_access_token():
     except:
         return failure_page("please log in first")
 
+
 def failure_page(failure_info=""):
     return jsonify({'error': failure_info})
 
+
+def success_page(display_info=""):
+    return jsonify({'success': display_info})
+    
 
 def get_submission_history(submissions):
     return jsonify({'submissions': [get_submission_detail_without_feedback(submission) for submission in submissions]})

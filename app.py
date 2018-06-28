@@ -13,11 +13,14 @@ from sqlalchemy.dialects.postgresql import JSON
 import numpy as np
 import re
 import pytest
-from utils import get_env_variable, set_access_token, get_submission_details_json,\
-                  get_access_token, check_access_token, get_submission_history, failure_page
-# from config.testing_docker import *
 import boto3
 import json
+import warnings
+
+from backend.database import User, Submission, db_session
+from backend.utils import get_env_variable, set_access_token, get_submission_details_json, \
+                  get_access_token, check_access_token, get_submission_history, failure_page, \
+                  success_page
 
 
 
@@ -26,15 +29,17 @@ SESSION_TYPE = 'filesystem'
 app = Flask(__name__)
 
 if len(sys.argv) < 2:
-    raise('Usage: python app.py [mode]')
-if sys.argv[1] == 'production':
-    from config.production import *
+    from backend.config.testing_local import *
+elif sys.argv[1] == 'production':
+    from backend.config.production import *
 elif sys.argv[1] == 'testing_local':
-    from config.test_local import *
+    from backend.config.testing_local import *
 elif sys.argv[1] == 'testing_docker':
-    from config.test_docker import *
+    from backend.config.testing_docker import *
+elif 'pytest' in sys.argv[0]:
+    from backend.config.testing_local import *
 else:
-    raise('Mode not supported.')
+    raise ValueError('Mode not supported.')
 
 app.config.from_object(__name__)
 
@@ -48,9 +53,13 @@ db = SQLAlchemy(app)
 db.init_app(app)
 
 
-sqs = boto3.client('sqs')
-resp = sqs.get_queue_url(QueueName='advex')
-queue_url = resp['QueueUrl']
+try:
+    sqs = boto3.client('sqs')
+    resp = sqs.get_queue_url(QueueName='advex')
+    queue_url = resp['QueueUrl']
+except:
+    # should raise error here
+    warnings.warn("sqs not started", UserWarning)
 
 
 def send_job_to_sqs(submission_id, s3_model_key, s3_index_key):
@@ -63,38 +72,7 @@ def send_job_to_sqs(submission_id, s3_model_key, s3_index_key):
     resp = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
 
 
-class User(db.Model):
-    """
-    access attribute by someuser.user_id
-    """
-    user_id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.String(200), unique=False, nullable=False)
-    email = db.Column(db.String(200), unique=True, nullable=False)
-    password = db.Column(db.String(200), unique=False, nullable=False)
-
-    def __repr__(self):
-        return '<User id: {}, nickname: {}, email: {}>'.format(self.user_id, 
-            self.nickname, self.email)
-
-
-class Submission(db.Model):
-    submission_id = db.Column(db.Integer, primary_key=True)
-    model_name = db.Column(db.String(80), nullable=False)
-    status = db.Column(db.String(80), nullable=False)
-    s3_model_key = db.Column(db.String(80), nullable=False)
-    s3_index_key = db.Column(db.String(80), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    feedback = db.Column(JSON, nullable=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    
-    user = db.relationship('User',
-        backref=db.backref('submissions', lazy=True), uselist=False)
-
-    def __repr__(self):
-        return '<Submission: {}>'.format(self.submission_id)
-
-
+'''
 def resetdb_command():
     db.drop_all()
     db.create_all()
@@ -129,15 +107,11 @@ def test():
     db.session.commit()
     print(User.query.all())
     print(Submission.query.all())
-
+'''
 
 @app.route("/")
 def main():
-    if DEBUG:
-        resetdb_command()
-
-    test()
-    return 'Hello World !'
+    return success_page('Hello World !')
 
 
 @app.route("/root")
@@ -151,9 +125,9 @@ def user_register():
         form = request.get_json()
         new_user = User(nickname=form['nickname'], 
             email=form['email'], password=form['password'])
-        db.session.add(new_user)
-        db.session.commit()
-        return 'successfully registered!'
+        db_session.add(new_user)
+        db_session.commit()
+        return success_page('successfully registered!')
     except:
         return failure_page('failed to register')
 
@@ -203,9 +177,9 @@ def get_update_submission_detail(submission_id):
             form = request.get_json()
             submission = Submission.query.get(form['submission_id'])
             submission.feedback = form['feedback']
-            db.session.commit()
+            db_session.commit()
 
-            return "successfully updated submission details"
+            return success_page("successfully updated submission details")
         except:
             return failure_page('failed to update submission details')
 
@@ -223,8 +197,8 @@ def make_submission():
             status="Submitted",
             s3_model_key=form['s3_model_key'], 
             s3_index_key=form['s3_index_key'])
-        db.session.add(submission)
-        db.session.commit()
+        db_session.add(submission)
+        db_session.commit()
 
         send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
         return jsonify({'submission_id': submission.submission_id})
@@ -255,9 +229,14 @@ def logout():
     try:
         form = request.get_json()
         del session[str(form['user_id'])]
-        return "successfully logout"
+        return success_page("successfully logout")
     except:
         return failure_page("failed to delete access token")
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
 
 
 if __name__ == '__main__':

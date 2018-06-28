@@ -1,10 +1,6 @@
 import pytest
 import os
 import tempfile
-
-#from flaskr import flaskr
-#from app import create_app
-
 from flask import Flask, session
 import flask
 from flask_session import Session
@@ -19,7 +15,7 @@ import numpy as np
 import re
 import pytest
 from backend.utils import *
-from backend.config.testing import *
+from backend.config.testing_local import *
 
 DEBUG = True
 
@@ -41,6 +37,7 @@ def create_app():
 
 @pytest.fixture
 def app():
-    app = create_app()
-    app.debug = True
+    #app = create_app()
+    #app.debug = True
+    from backend.app import app
     return app
