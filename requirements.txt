@@ -5,3 +5,5 @@ Sqlalchemy-Utils==0.33.3
 Numpy==1.14.2
 Pytest==3.6.0
 Psycopg2==2.7.5
+flask_cors==3.0.2
+boto3==1.4.7
