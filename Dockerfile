@@ -22,4 +22,4 @@ EXPOSE 80
 
 # Run script on start
 RUN chmod 755 ./start.sh
-ENTRYPOINT ["sh", "./start.sh"]
+ENTRYPOINT ["./start.sh"]
