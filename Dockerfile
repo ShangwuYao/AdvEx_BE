@@ -20,8 +20,6 @@ RUN apt-get update && apt-get install -y \
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
-# Define environment variable
-ENV NAME World
-
-# Run app.py when the container launches
-CMD ["python", "app.py", "production"]
+# Run script on start
+RUN chmod 755 ./start.sh
+ENTRYPOINT ["./start.sh"]
