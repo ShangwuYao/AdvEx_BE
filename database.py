@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
@@ -5,8 +6,8 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.declarative import declarative_base
 
-from config.testing_local import *
-
+# from config.testing_local import *
+SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI']
 
 
 engine = create_engine(SQLALCHEMY_DATABASE_URI, convert_unicode=True)
@@ -37,7 +38,7 @@ class User(Model):
 
 
 class Submission(Model):
-    __tablename__ = 'submissions'
+    __tablename__ = 'submission'
     submission_id = Column(Integer, primary_key=True)
     model_name = Column(String(80), nullable=False)
     status = Column(String(80), nullable=False)
@@ -49,7 +50,7 @@ class Submission(Model):
     user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
     
     user = relationship('User',
-        backref=backref('submissions', lazy=True), uselist=False)
+        backref=backref('submission', lazy=True), uselist=False)
 
     def __repr__(self):
         return '<Submission: {}>'.format(self.submission_id)
