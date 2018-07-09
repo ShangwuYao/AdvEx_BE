@@ -3,7 +3,6 @@
 /flask_session
 /*/flask_session
 config/
-*.env
 
 # Created by https://www.gitignore.io/api/python
 
