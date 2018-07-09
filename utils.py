@@ -46,10 +46,10 @@ def check_access_token():
     try:
         istokenvalid = _tokenized(request.headers.get('Authorization'))
         if not istokenvalid:
-            return failure_page("access token doesn't match", 401)
+            return failure_page("Invalid access token", 401)
         return None
-    except:
-        return failure_page("please log in first", 401)
+    except Exception as e:
+        return failure_page("Failed to check access token", 500)
 
 
 def failure_page(failure_info="", status=200):
@@ -87,4 +87,3 @@ def get_submission_details_json(submission):
 
 
 
-    
