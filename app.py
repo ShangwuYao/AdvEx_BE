@@ -121,6 +121,7 @@ def root():
 
 @app.route('/users', methods=['POST'])
 def user_register():
+    # return failure_page('Registration is disabled.', 403)
     try:
         form = request.get_json()
         new_user = User(nickname=form['nickname'], 
@@ -143,7 +144,7 @@ def get_user_info(user_id):
         
         return jsonify({'user_id':user.user_id, 'email':user.email, 'nickname':user.nickname})
     except:
-        return failure_page('failed to get user info')
+        return failure_page('failed to get user info', 500)
 
 
 @app.route('/users/<int:user_id>/submissions', methods=['GET'])
@@ -157,7 +158,7 @@ def get_user_submissions(user_id):
         result = get_submission_history(result)
         return result
     except:
-        return failure_page('failed to get user submissions')
+        return failure_page('failed to get user submissions', 500)
 
 
 @app.route('/submissions/<int:submission_id>', methods=['GET', 'POST'])
@@ -171,7 +172,7 @@ def get_update_submission_detail(submission_id):
             submission = Submission.query.get(submission_id)
             return get_submission_details_json(submission)
         except:
-            return failure_page('failed to get get submission details')
+            return failure_page('failed to get get submission details', 500)
     else:
         try:
             form = request.get_json()
@@ -181,7 +182,7 @@ def get_update_submission_detail(submission_id):
 
             return success_page("successfully updated submission details")
         except:
-            return failure_page('failed to update submission details')
+            return failure_page('failed to update submission details', 500)
 
 
 @app.route('/submit', methods=['POST'])
@@ -203,7 +204,7 @@ def make_submission():
         send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
         return jsonify({'submission_id': submission.submission_id})
     except:
-        return failure_page("failed to submit, check user id")
+        return failure_page("failed to submit, check user id", 500)
 
 
 @app.route('/login', methods=['POST'])
@@ -215,9 +216,9 @@ def login():
             token = set_access_token(user.user_id)
             return jsonify({'user_id': user.user_id, 'token': token})
         else:
-            return failure_page("user doesn't exists or password doesn't match")
+            return failure_page("user doesn't exists or password doesn't match", 401)
     except:
-        return failure_page("failed to login")
+        return failure_page("failed to login", 500)
 
 
 @app.route('/logout', methods=['POST'])
@@ -231,7 +232,7 @@ def logout():
         del session[str(form['user_id'])]
         return success_page("successfully logout")
     except:
-        return failure_page("failed to delete access token")
+        return failure_page("failed to delete access token", 500)
 
 
 @app.teardown_appcontext

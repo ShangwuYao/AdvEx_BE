@@ -6,7 +6,8 @@ import os
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from datetime import datetime
 from flask import request
-from flask import jsonify  
+from flask import jsonify
+from flask import make_response
 from sqlalchemy.dialects.postgresql import JSON
 import numpy as np
 import re
@@ -45,14 +46,15 @@ def check_access_token():
     try:
         istokenvalid = _tokenized(request.headers.get('Authorization'))
         if not istokenvalid:
-            return failure_page("access token doesn't match")
+            return failure_page("access token doesn't match", 401)
         return None
     except:
-        return failure_page("please log in first")
+        return failure_page("please log in first", 401)
 
 
-def failure_page(failure_info=""):
-    return jsonify({'error': failure_info})
+def failure_page(failure_info="", status=200):
+    response = jsonify({'error': failure_info})
+    return make_response((response, status))
 
 
 def success_page(display_info=""):
