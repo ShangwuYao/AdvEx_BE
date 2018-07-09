@@ -129,8 +129,8 @@ def user_register():
         db_session.add(new_user)
         db_session.commit()
         return success_page('Successfully registered')
-    except:
-        return failure_page('Failed to register')
+    except Exception as e:
+        return failure_page("Failed to register: {0}".format(str(e)), 500)
 
 
 @app.route('/users/<int:user_id>', methods=['GET'])
@@ -143,8 +143,8 @@ def get_user_info(user_id):
         user = User.query.get(user_id)
         
         return jsonify({'user_id':user.user_id, 'email':user.email, 'nickname':user.nickname})
-    except:
-        return failure_page('Failed to get user information', 500)
+    except Exception as e:
+        return failure_page("Failed to get user information: {0}".format(str(e)), 500)
 
 
 @app.route('/users/<int:user_id>/submissions', methods=['GET'])
@@ -157,8 +157,8 @@ def get_user_submissions(user_id):
         result = Submission.query.filter_by(user_id=user_id).all()
         result = get_submission_history(result)
         return result
-    except:
-        return failure_page('Failed to get submission history', 500)
+    except Exception as e:
+        return failure_page("Failed to get submission history: {0}".format(str(e)), 500)
 
 
 @app.route('/submissions/<int:submission_id>', methods=['GET', 'POST'])
@@ -171,8 +171,8 @@ def get_update_submission_detail(submission_id):
         try:
             submission = Submission.query.get(submission_id)
             return get_submission_details_json(submission)
-        except:
-            return failure_page('Failed to get submission detail', 500)
+        except Exception as e:
+            return failure_page("Failed to get submission detail: {0}".format(str(e)), 500)
     else:
         try:
             form = request.get_json()
@@ -181,8 +181,8 @@ def get_update_submission_detail(submission_id):
             db_session.commit()
 
             return success_page("Successfully updated submission detail")
-        except:
-            return failure_page('Failed to update submission detail', 500)
+        except Exception as e:
+            return failure_page("Failed to update submission detail: {0}".format(str(e)), 500)
 
 
 @app.route('/submit', methods=['POST'])
@@ -203,8 +203,8 @@ def make_submission():
 
         send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
         return jsonify({'submission_id': submission.submission_id})
-    except:
-        return failure_page("Failed to submit", 500)
+    except Exception as e:
+        return failure_page("Failed to submit: {0}".format(str(e)), 500)
 
 
 @app.route('/login', methods=['POST'])
@@ -231,8 +231,8 @@ def logout():
         form = request.get_json()
         del session[str(form['user_id'])]
         return success_page("Successfully logged out")
-    except:
-        return failure_page("Failed to log out", 500)
+    except Exception as e:
+        return failure_page("Failed to log out: {0}".format(str(e)), 500)
 
 
 @app.teardown_appcontext
