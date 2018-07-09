@@ -217,8 +217,8 @@ def login():
             return jsonify({'user_id': user.user_id, 'token': token})
         else:
             return failure_page("Email/Password not matched", 401)
-    except:
-        return failure_page("Failed to log in", 500)
+    except Exception as e:
+        return failure_page("Failed to log in: {0}".format(str(e)), 500)
 
 
 @app.route('/logout', methods=['POST'])
