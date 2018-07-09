@@ -34,12 +34,16 @@ def set_access_token(user_id):
 
 def get_access_token(user_id):
     user_id = str(user_id)
-    return session[user_id]
+    try:
+      return session[user_id]
+    except:
+      return None
 
 
 def _tokenized(token):
     user_id = re.findall("\ (.*)\:", token)[0]
-    return token == get_access_token(user_id)
+    real_token = get_access_token(user_id)
+    return real_token is not None and real_token == token
 
 
 def check_access_token():
@@ -49,7 +53,7 @@ def check_access_token():
             return failure_page("Invalid access token", 401)
         return None
     except Exception as e:
-        return failure_page("Failed to check access token", 500)
+        return failure_page("Failed to check access token: {0}".format(str(e)), 500)
 
 
 def failure_page(failure_info="", status=200):
