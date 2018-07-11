@@ -17,7 +17,6 @@ import boto3
 import json
 import warnings
 
-#from backend.database import User, Submission, db_session
 from backend.utils import get_env_variable, set_access_token, get_submission_details_json, \
                   get_access_token, check_access_token, get_submission_history, failure_page, \
                   success_page
@@ -73,9 +72,6 @@ def send_job_to_sqs(submission_id, s3_model_key, s3_index_key):
 
 
 class User(db.Model):
-    """
-    access attribute by someuser.user_id
-    """
     user_id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(200), unique=False, nullable=False)
     email = db.Column(db.String(200), unique=True, nullable=False)
@@ -95,7 +91,7 @@ class Submission(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     feedback = db.Column(JSON, nullable=True)
 
-    user_id = db.Column(db.Integer, ForeignKey('user.user_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     
     user = db.relationship('User',
         backref=db.backref('submission', lazy=True), uselist=False)
@@ -103,7 +99,7 @@ class Submission(db.Model):
     def __repr__(self):
         return '<Submission: {}>'.format(self.submission_id)
 
-
+'''
 def resetdb_command():
     db.drop_all()
     db.create_all()
@@ -138,29 +134,18 @@ def test():
     db.session.commit()
     print(User.query.all())
     print(Submission.query.all())
-
-
-@app.route("/")
-def main():
-    resetdb_command()
-    test()
-    return success_page('Hello World !')
-
-
-@app.route("/root")
-def root():
-    return main()
+'''
 
 
 @app.route('/users', methods=['POST'])
 def user_register():
-    return failure_page('Registration is disabled.', 403)
+    #return failure_page('Registration is disabled.', 403)
     try:
         form = request.get_json()
         new_user = User(nickname=form['nickname'], 
             email=form['email'], password=form['password'])
-        db_session.add(new_user)
-        db_session.commit()
+        db.session.add(new_user)
+        db.session.commit()
         return success_page('Successfully registered')
     except Exception as e:
         return failure_page("Failed to register: {0}".format(str(e)), 500)
@@ -211,7 +196,7 @@ def get_update_submission_detail(submission_id):
             form = request.get_json()
             submission = Submission.query.get(form['submission_id'])
             submission.feedback = form['feedback']
-            db_session.commit()
+            db.session.commit()
 
             return success_page("Successfully updated submission detail")
         except Exception as e:
@@ -231,8 +216,8 @@ def make_submission():
             status="Submitted",
             s3_model_key=form['s3_model_key'], 
             s3_index_key=form['s3_index_key'])
-        db_session.add(submission)
-        db_session.commit()
+        db.session.add(submission)
+        db.session.commit()
 
         send_job_to_sqs(submission.submission_id, form['s3_model_key'], form['s3_index_key'])
         return jsonify({'submission_id': submission.submission_id})
@@ -270,7 +255,7 @@ def logout():
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    db_session.remove()
+    db.session.remove()
 
 
 if __name__ == '__main__':

@@ -11,34 +11,26 @@ NICKNAME = 'aircrash'
 EMAIL = 'test_dave@example.com'
 PASSWORD = 'hello'
 
-User.query.delete()
-print(User.query.all())
-Submission.query.delete()
-print(Submission.query.all())
+db.drop_all()
+db.create_all()
+db.session.commit()
 
-'''
+
 class TestApp:
-
-    def test_root(self, client):
-        res = client.get(url_for('root'))
-        expected = jsonify({'success': 'successfully registered!'})
-        assert res.status_code == 200
-        assert b'Hello World !' in res.data
-
 
     def test_post_users(self, client):
         user_data = json.dumps({'nickname':NICKNAME, 'email':EMAIL, 'password':PASSWORD})
         res = client.post('/users',
                           data=user_data,
                           content_type='application/json')
-        expected = {'success':'successfully registered!'}
+        expected = {'success':'Successfully registered'}
         assert expected == json.loads(res.data)
 
         res2 = client.post('/users', 
                            data=user_data, 
                            content_type='application/json')
-        expected = {'error':'failed to register'}
-        assert expected == json.loads(res2.data)
+        expected = {'error':'Failed to register'}
+        assert 'Failed to register' in json.loads(res2.data)['error']
 
 
 class TestUser(unittest.TestCase):
@@ -57,8 +49,6 @@ class TestUser(unittest.TestCase):
         users = User.query.all()
 
         assert user in users
-        print("NUMBER OF ENTRIES:")
-        print(len(users))
 
 
 class TestSubmission(unittest.TestCase):
@@ -79,7 +69,4 @@ class TestSubmission(unittest.TestCase):
         submissions = Submission.query.all()
 
         assert submission in submissions
-        print("NUMBER OF ENTRIES:")
-        print(len(submissions))
-'''
 
