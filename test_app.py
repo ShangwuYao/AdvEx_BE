@@ -11,17 +11,13 @@ NICKNAME = 'aircrash'
 EMAIL = 'test_dave@example.com'
 PASSWORD = 'hello'
 
+User.query.delete()
+print(User.query.all())
+Submission.query.delete()
+print(Submission.query.all())
 
-#db.session.commit()
-db.drop_all()
-db.create_all()
-
-
+'''
 class TestApp:
-
-    def test_0(self):
-        db.drop_all()
-        db.create_all()
 
     def test_root(self, client):
         res = client.get(url_for('root'))
@@ -85,5 +81,5 @@ class TestSubmission(unittest.TestCase):
         assert submission in submissions
         print("NUMBER OF ENTRIES:")
         print(len(submissions))
-
+'''
 

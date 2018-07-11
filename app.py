@@ -17,8 +17,8 @@ import boto3
 import json
 import warnings
 
-from database import User, Submission, db_session
-from utils import get_env_variable, set_access_token, get_submission_details_json, \
+#from backend.database import User, Submission, db_session
+from backend.utils import get_env_variable, set_access_token, get_submission_details_json, \
                   get_access_token, check_access_token, get_submission_history, failure_page, \
                   success_page
 
@@ -29,15 +29,15 @@ SESSION_TYPE = 'filesystem'
 app = Flask(__name__)
 
 if len(sys.argv) < 2:
-    from config.testing_local import *
+    from backend.config.testing_local import *
 elif sys.argv[1] == 'production':
-    from config.production import *
+    from backend.config.production import *
 elif sys.argv[1] == 'testing_local':
-    from config.testing_local import *
+    from backend.config.testing_local import *
 elif sys.argv[1] == 'testing_docker':
-    from config.testing_docker import *
+    from backend.config.testing_docker import *
 elif 'pytest' in sys.argv[0]:
-    from config.testing_local import *
+    from backend.config.testing_local import *
 else:
     raise ValueError('Mode not supported.')
 
@@ -72,7 +72,38 @@ def send_job_to_sqs(submission_id, s3_model_key, s3_index_key):
     resp = sqs.send_message(QueueUrl=queue_url, MessageBody=message)
 
 
-'''
+class User(db.Model):
+    """
+    access attribute by someuser.user_id
+    """
+    user_id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.String(200), unique=False, nullable=False)
+    email = db.Column(db.String(200), unique=True, nullable=False)
+    password = db.Column(db.String(200), unique=False, nullable=False)
+
+    def __repr__(self):
+        return '<User id: {}, nickname: {}, email: {}>'.format(self.user_id, 
+            self.nickname, self.email)
+
+
+class Submission(db.Model):
+    submission_id = db.Column(db.Integer, primary_key=True)
+    model_name = db.Column(db.String(80), nullable=False)
+    status = db.Column(db.String(80), nullable=False)
+    s3_model_key = db.Column(db.String(80), nullable=False)
+    s3_index_key = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    feedback = db.Column(JSON, nullable=True)
+
+    user_id = db.Column(db.Integer, ForeignKey('user.user_id'), nullable=False)
+    
+    user = db.relationship('User',
+        backref=db.backref('submission', lazy=True), uselist=False)
+
+    def __repr__(self):
+        return '<Submission: {}>'.format(self.submission_id)
+
+
 def resetdb_command():
     db.drop_all()
     db.create_all()
@@ -107,16 +138,18 @@ def test():
     db.session.commit()
     print(User.query.all())
     print(Submission.query.all())
-'''
-
-# @app.route("/")
-# def main():
-#     return success_page('Hello World !')
 
 
-# @app.route("/root")
-# def root():
-#     return main()
+@app.route("/")
+def main():
+    resetdb_command()
+    test()
+    return success_page('Hello World !')
+
+
+@app.route("/root")
+def root():
+    return main()
 
 
 @app.route('/users', methods=['POST'])
