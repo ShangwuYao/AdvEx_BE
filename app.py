@@ -26,20 +26,6 @@ from AdvEx_BE.utils import get_env_variable, set_access_token, get_submission_de
 SESSION_TYPE = 'filesystem'
 
 app = Flask(__name__)
-
-#if len(sys.argv) < 2:
-#    from AdvEx_BE.config.testing_local import *
-#elif sys.argv[1] == 'production':
-#    from AdvEx_BE.config.production import *
-#elif sys.argv[1] == 'testing_local':
-#    from AdvEx_BE.config.testing_local import *
-#elif sys.argv[1] == 'testing_docker':
-#    from AdvEx_BE.config.testing_docker import *
-#elif 'pytest' in sys.argv[0]:
-#    from AdvEx_BE.config.testing_local import *
-#else:
-#    raise ValueError('Mode not supported.')
-
 app.config.from_object(__name__)
 
 Session(app)
@@ -113,7 +99,7 @@ def resetdb_command():
 
 @app.route('/users', methods=['POST'])
 def user_register():
-    #return failure_page('Registration is disabled.', 403)
+    return failure_page('Registration is disabled.', 403)
     try:
         form = request.get_json()
         new_user = User(nickname=form['nickname'], 
