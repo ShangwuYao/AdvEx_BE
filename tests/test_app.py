@@ -1,7 +1,7 @@
 import pytest
 from flask import url_for
 from flask import json, jsonify
-from backend.app import db, User, Submission
+from AdvEx_BE.app import db, User, Submission
 import unittest
 
 

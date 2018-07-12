@@ -17,7 +17,7 @@ import boto3
 import json
 import warnings
 
-from backend.utils import get_env_variable, set_access_token, get_submission_details_json, \
+from AdvEx_BE.utils import get_env_variable, set_access_token, get_submission_details_json, \
                   get_access_token, check_access_token, get_submission_history, failure_page, \
                   success_page
 
@@ -28,15 +28,15 @@ SESSION_TYPE = 'filesystem'
 app = Flask(__name__)
 
 if len(sys.argv) < 2:
-    from backend.config.testing_local import *
+    from AdvEx_BE.config.testing_local import *
 elif sys.argv[1] == 'production':
-    from backend.config.production import *
+    from AdvEx_BE.config.production import *
 elif sys.argv[1] == 'testing_local':
-    from backend.config.testing_local import *
+    from AdvEx_BE.config.testing_local import *
 elif sys.argv[1] == 'testing_docker':
-    from backend.config.testing_docker import *
+    from AdvEx_BE.config.testing_docker import *
 elif 'pytest' in sys.argv[0]:
-    from backend.config.testing_local import *
+    from AdvEx_BE.config.testing_local import *
 else:
     raise ValueError('Mode not supported.')
 

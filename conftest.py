@@ -14,8 +14,8 @@ from sqlalchemy.dialects.postgresql import JSON
 import numpy as np
 import re
 import pytest
-from backend.utils import *
-from backend.config.testing_local import *
+from AdvEx_BE.utils import *
+from AdvEx_BE.config.testing_local import *
 
 DEBUG = True
 
@@ -39,5 +39,5 @@ def create_app():
 def app():
     #app = create_app()
     #app.debug = True
-    from backend.app import app
+    from AdvEx_BE.app import app
     return app
