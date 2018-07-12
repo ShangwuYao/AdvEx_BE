@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/ShangwuYao/AdvEx_BE.svg?branch=master)](https://travis-ci.com/ShangwuYao/AdvEx_BE)
 # AdvEx BackEnd
 
 # Dependencies
