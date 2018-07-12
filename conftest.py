@@ -15,25 +15,25 @@ import numpy as np
 import re
 import pytest
 from AdvEx_BE.utils import *
-from AdvEx_BE.config.testing_local import *
+#from AdvEx_BE.config.testing_local import *
 
 DEBUG = True
 
 SESSION_TYPE = 'filesystem'
 
-def create_app():
-    app = Flask(__name__)
-
-    app.config.from_object(__name__)
-    Session(app)
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
-
-    db = SQLAlchemy(app)
-    db.init_app(app)
-
-    return app
+#def create_app():
+#    app = Flask(__name__)
+#
+#    app.config.from_object(__name__)
+#    Session(app)
+#
+#    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+#    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
+#
+#    db = SQLAlchemy(app)
+#    db.init_app(app)
+#
+#    return app
 
 @pytest.fixture
 def app():
