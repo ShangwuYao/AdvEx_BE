@@ -11,6 +11,7 @@ NICKNAME = 'aircrash'
 EMAIL = 'test_dave@example.com'
 PASSWORD = 'hello'
 
+# clean up test database
 db.drop_all()
 db.create_all()
 db.session.commit()
@@ -69,4 +70,5 @@ class TestSubmission(unittest.TestCase):
         submissions = Submission.query.all()
 
         assert submission in submissions
+
 

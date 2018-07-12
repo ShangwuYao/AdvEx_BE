@@ -99,42 +99,10 @@ class Submission(db.Model):
     def __repr__(self):
         return '<Submission: {}>'.format(self.submission_id)
 
-'''
+
 def resetdb_command():
     db.drop_all()
     db.create_all()
-
-
-def test():
-    Submission.query.delete()
-    User.query.delete()
-
-    db.create_all()
-    example_user = User(nickname='aircrash', email='dave@example.com', password='hello')
-    db.session.add(example_user)
-    db.session.commit()
-    print(User.query.all())
-
-    example_sub = Submission(user_id=User.query.all()[0].user_id, 
-        model_name="VGG-16 v1.0",
-        status="submitted",
-        s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
-        s3_index_key="7796f75c-f8f5-4707-901d-edcca3599326")
-    db.session.add(example_sub)
-    db.session.commit()
-    print(User.query.all())
-    print(Submission.query.all())
-
-    example_sub = Submission(user_id=User.query.all()[0].user_id, 
-        model_name="VGG-16 v1.0",
-        status="submitted",
-        s3_model_key="7796f75c-f8f5-4707-901d-edcca3599326", 
-        s3_index_key="7796f75c-f8f5-4707-901d-edcca3599326")
-    db.session.add(example_sub)
-    db.session.commit()
-    print(User.query.all())
-    print(Submission.query.all())
-'''
 
 
 @app.route('/users', methods=['POST'])
