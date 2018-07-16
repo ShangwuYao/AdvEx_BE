@@ -2,7 +2,7 @@
 
 cd ..
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-cd backend
-echo $PYTHONPATH
+ls
+cd AdvEx_BE
 
-python app.py testing_local
+python app.py

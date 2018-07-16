@@ -17,7 +17,7 @@ import boto3
 import json
 import warnings
 
-from backend.utils import get_env_variable, set_access_token, get_submission_details_json, \
+from AdvEx_BE.utils import get_env_variable, set_access_token, get_submission_details_json, \
                   get_access_token, check_access_token, get_submission_history, failure_page, \
                   success_page
 
@@ -26,24 +26,16 @@ from backend.utils import get_env_variable, set_access_token, get_submission_det
 SESSION_TYPE = 'filesystem'
 
 app = Flask(__name__)
-
-if len(sys.argv) < 2:
-    from backend.config.testing_local import *
-elif sys.argv[1] == 'production':
-    from backend.config.production import *
-elif sys.argv[1] == 'testing_local':
-    from backend.config.testing_local import *
-elif sys.argv[1] == 'testing_docker':
-    from backend.config.testing_docker import *
-elif 'pytest' in sys.argv[0]:
-    from backend.config.testing_local import *
-else:
-    raise ValueError('Mode not supported.')
-
 app.config.from_object(__name__)
 
 Session(app)
 cors = CORS(app, supports_credentials=True)
+
+SQLALCHEMY_DATABASE_URI = get_env_variable('SQLALCHEMY_DATABASE_URI')
+SQLALCHEMY_TRACK_MODIFICATIONS = get_env_variable('SQLALCHEMY_TRACK_MODIFICATIONS')
+DEBUG = get_env_variable('DEBUG')
+HOST = get_env_variable('HOST')
+PORT = get_env_variable('PORT')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS

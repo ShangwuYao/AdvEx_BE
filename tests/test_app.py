@@ -1,7 +1,7 @@
 import pytest
 from flask import url_for
 from flask import json, jsonify
-from backend.app import db, User, Submission
+from AdvEx_BE.app import db, User, Submission
 import unittest
 
 
@@ -16,10 +16,9 @@ db.drop_all()
 db.create_all()
 db.session.commit()
 
-
 class TestApp:
 
-    def test_post_users(self, client):
+    def test_register_users(self, client):
         user_data = json.dumps({'nickname':NICKNAME, 'email':EMAIL, 'password':PASSWORD})
         res = client.post('/users',
                           data=user_data,
