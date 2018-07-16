@@ -22,9 +22,9 @@ docker pull awp135/advex:backend
 ```
 
 # Usage
-Use PostgresSQL, supports two way of testing now (to be refactorized):
+Supports two ways of deploying:
 ## 1. Testing locally: 
-First, set configuration settings in environment variables, an example of this is (see examples of configuration in docs/ for detail):
+First, set configuration settings in environment variables, an example of this is (see [examples of configuration](https://github.com/ShangwuYao/AdvEx_BE/tree/master/docs) in docs/ for detail):
 ```bash
 export SQLALCHEMY_DATABASE_URI="your_postgressql_uri"
 export SQLALCHEMY_TRACK_MODIFICATIONS=False
@@ -37,7 +37,7 @@ Then, start the backend server by simply:
 ./start.sh
 ```
 
-## 2. Testing with docker:
+## 2. Deploying on AWS using docker:
 First, set the environment variables on AWS just as testing locally. 
 Then, start the backend server by (the following command maps host port 4000 to docker port 80 and uses 5432 for postgresDB port, see examples of configuration in docs/ for detail):
 ```bash
