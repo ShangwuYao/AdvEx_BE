@@ -16,10 +16,9 @@ db.drop_all()
 db.create_all()
 db.session.commit()
 
-
 class TestApp:
 
-    def test_post_users(self, client):
+    def test_register_users(self, client):
         user_data = json.dumps({'nickname':NICKNAME, 'email':EMAIL, 'password':PASSWORD})
         res = client.post('/users',
                           data=user_data,

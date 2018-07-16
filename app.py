@@ -99,7 +99,7 @@ def resetdb_command():
 
 @app.route('/users', methods=['POST'])
 def user_register():
-    return failure_page('Registration is disabled.', 403)
+    #return failure_page('Registration is disabled.', 403)
     try:
         form = request.get_json()
         new_user = User(nickname=form['nickname'], 
