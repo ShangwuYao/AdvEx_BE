@@ -1,5 +1,9 @@
 from app import app
-from backend.config.testing_local import HOST, PORT
+from AdvEx_BE.utils import get_env_variable
 
-if __name__ == '__main__':
+HOST = get_env_variable('HOST')
+PORT = get_env_variable('PORT')
+
+
+if __name__ == '__main__':	
     app.run(host=HOST, port=PORT)

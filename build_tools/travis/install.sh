@@ -2,6 +2,8 @@
 
 cd ..
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-cd AdvEx_BE
-echo $PYTHONPATH
 ls
+cd AdvEx_BE
+
+echo $PYTHONPATH
+
