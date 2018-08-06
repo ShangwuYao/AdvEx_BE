@@ -16,6 +16,11 @@ Cloud-based architecture of AdvEx:
 <img src="https://pic-markdown.s3.amazonaws.com/region=us-west-2&tab=overview/2018-08-06-013104.png" width=600 height=500/>
 </p>
 
+### Tech Stack
+<p align="center">
+<img src="https://pic-markdown.s3.amazonaws.com/region=us-west-2&tab=overview/2018-08-06-021058.png" width=600 height=300/>
+</p>
+
 Links:
 
 [Project video demo](https://www.youtube.com/watch?v=KJ1zZsia5yQ) | [Front-end static demo](https://dnc1994.com/AdvEx-FE/) | [Front-end repo](https://github.com/dnc1994/AdvEx-FE) | [Back-end repo](https://github.com/ShangwuYao/AdvEx_BE) | [Evaluation worker repo](https://github.com/ShangwuYao/AdvEx_Evaluation)
