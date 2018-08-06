@@ -1,5 +1,29 @@
 [![Build Status](https://travis-ci.com/ShangwuYao/AdvEx_BE.svg?branch=master)](https://travis-ci.com/ShangwuYao/AdvEx_BE)
 # AdvEx BackEnd
+### About AdvEx
+AdvEx is a web service for assessing the robustness of machine learning models with adversarial machine learning. It is designed to satisfy the following quality attributes:
+- **Scalability**: achieved by auto-scaling and load-balancing using elastic beanstalk
+- **Availability**: achieved by having different servers in different availability zones
+- **Performance**: achieved by using GPU in evaluation workers, and having users upload their models directly to S3 buckets without going through servers first
+- **Security**: achieved by using AWS security group
+- **Usability**: achieved by creating helpful instructions and tutorials for users who are not machine learning experts
+- **Configurability**: achieved by using Elastic Beanstalk, Docker and config files
+
+
+Cloud-based architecture of AdvEx: 
+
+<p align="center">
+<img src="https://pic-markdown.s3.amazonaws.com/region=us-west-2&tab=overview/2018-08-06-013104.png" width=600 height=500/>
+</p>
+
+Links:
+
+[Project Demo](https://dnc1994.com/AdvEx-FE/), [Front-end](https://github.com/dnc1994/AdvEx-FE), [Back-end](https://github.com/ShangwuYao/AdvEx_BE), [Evaluation worker](https://github.com/ShangwuYao/AdvEx_Evaluation)
+
+### Backend Features
+- Supports RESTful APIs for user and submission data, implemented with Flask and PostgreSQL
+- Adopts an automatic build, test and deploy workflow using Docker, pytest and Travis-CI, improves code quality with continuous integration
+- Handles auto-scaling and load-balancing with Elastic Beanstalk and Docker, reduces deployment time of a new version to 5 min
 
 # Dependencies
 python version 3.6
