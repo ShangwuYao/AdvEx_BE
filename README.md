@@ -1,7 +1,14 @@
 [![Build Status](https://travis-ci.com/ShangwuYao/AdvEx_BE.svg?branch=master)](https://travis-ci.com/ShangwuYao/AdvEx_BE)
 # AdvEx BackEnd
+### Adversarial Machine Learning
+The security of machine learning algorithms has not yet received enough attention from the public, an attacker might intentionally manipulate the input data of machine learning algorithms to compromise the system security. An example of this is shown in the following picture, after adding some intentionally designed random noise into the original image, the machine learning model has 99% confidence in predicting the image as a "gibbon", even though the change in the image is neglectable to human eyes.
+
+<p align="center">
+<img src="https://pic-markdown.s3.amazonaws.com/region=us-west-2&tab=overview/2018-08-06-172348.png" width=400 height=160/>
+</p>
+
 ### About AdvEx
-AdvEx is a web service for assessing the robustness of machine learning models with adversarial machine learning. It is designed to satisfy the following quality attributes:
+Since machine learning has become critical parts of many systems in different fields, such as autonomous driving, we created  AdvEx to prevent threat like this. AdvEx is a web service for assessing the robustness of machine learning models with adversarial machine learning. It is designed to fulfill the following quality attributes:
 - **Scalability**: achieved by auto-scaling and load-balancing using elastic beanstalk
 - **Availability**: achieved by having different servers in different availability zones
 - **Performance**: achieved by using GPU in evaluation workers, and having users upload their models directly to S3 buckets without going through servers first
