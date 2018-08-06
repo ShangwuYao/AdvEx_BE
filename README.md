@@ -18,7 +18,7 @@ Cloud-based architecture of AdvEx:
 
 Links:
 
-[Project Demo](https://dnc1994.com/AdvEx-FE/), [Front-end](https://github.com/dnc1994/AdvEx-FE), [Back-end](https://github.com/ShangwuYao/AdvEx_BE), [Evaluation worker](https://github.com/ShangwuYao/AdvEx_Evaluation)
+[Project video demo](https://www.youtube.com/watch?v=KJ1zZsia5yQ) | [Front-end static demo](https://dnc1994.com/AdvEx-FE/) | [Front-end repo](https://github.com/dnc1994/AdvEx-FE) | [Back-end repo](https://github.com/ShangwuYao/AdvEx_BE) | [Evaluation worker repo](https://github.com/ShangwuYao/AdvEx_Evaluation)
 
 ### Backend Features
 - Supports RESTful APIs for user and submission data, implemented with Flask and PostgreSQL
